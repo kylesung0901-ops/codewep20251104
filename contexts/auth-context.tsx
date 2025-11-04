@@ -39,18 +39,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    if (!auth) throw new Error('Firebase Auth is not initialized');
-    await signInWithEmailAndPassword(auth, email, password);
+    if (!auth) {
+      throw new Error('Firebase Auth is not initialized. Please check your Firebase configuration.');
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error: any) {
+      console.error('Sign in error:', error);
+      throw error;
+    }
   };
 
   const signUp = async (email: string, password: string) => {
-    if (!auth) throw new Error('Firebase Auth is not initialized');
-    await createUserWithEmailAndPassword(auth, email, password);
+    if (!auth) {
+      throw new Error('Firebase Auth is not initialized. Please check your Firebase configuration.');
+    }
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error: any) {
+      console.error('Sign up error:', error);
+      throw error;
+    }
   };
 
   const signOut = async () => {
-    if (!auth) throw new Error('Firebase Auth is not initialized');
-    await firebaseSignOut(auth);
+    if (!auth) {
+      console.warn('Firebase Auth is not initialized. Sign out skipped.');
+      return;
+    }
+    try {
+      await firebaseSignOut(auth);
+    } catch (error: any) {
+      console.error('Sign out error:', error);
+      throw error;
+    }
   };
 
   return (

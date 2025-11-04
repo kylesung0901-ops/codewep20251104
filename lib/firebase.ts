@@ -32,15 +32,28 @@ let storage: FirebaseStorage | undefined;
 let analytics: Analytics | null = null;
 
 if (typeof window !== 'undefined') {
-  // Initialize Firebase only if it hasn't been initialized
-  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  auth = getAuth(app);
-  db = getFirestore(app);
-  storage = getStorage(app);
-  
-  // Initialize Analytics only in browser
-  if (firebaseConfig.measurementId) {
-    analytics = getAnalytics(app);
+  try {
+    // Check if Firebase config is valid
+    if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+      console.warn('Firebase configuration is incomplete');
+    } else {
+      // Initialize Firebase only if it hasn't been initialized
+      app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+      auth = getAuth(app);
+      db = getFirestore(app);
+      storage = getStorage(app);
+      
+      // Initialize Analytics only in browser
+      if (firebaseConfig.measurementId) {
+        try {
+          analytics = getAnalytics(app);
+        } catch (analyticsError) {
+          console.warn('Analytics initialization failed:', analyticsError);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
   }
 }
 
