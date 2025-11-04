@@ -1,5 +1,8 @@
+"use client"
+
 import Link from "next/link"
 import { Mail, Phone, MapPin, Linkedin, Twitter, Github } from "lucide-react"
+import { Logo } from "@/components/logo"
 
 export default function Footer() {
   return (
@@ -8,7 +11,7 @@ export default function Footer() {
         <div className="grid gap-8 md:grid-cols-4 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="h-6 w-6 rounded-lg bg-primary" />
+              <Logo size="sm" />
               <span className="font-bold text-foreground">WeebStudio</span>
             </div>
             <p className="text-sm text-muted-foreground">스타트업과 중소기업의 성장을 돕는 웹 에이전시</p>

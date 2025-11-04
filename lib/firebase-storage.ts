@@ -75,13 +75,21 @@ export async function getStorageImageUrl(path: string): Promise<string | null> {
 
       console.log('Found files in Storage:', allFiles);
       
-      // 로고 파일 찾기 (png, jpg, jpeg, svg 확장자)
+      // 로고 파일 찾기 (png, jpg, jpeg, svg, webp 확장자)
       const logoFiles = allFiles.filter(file => {
         const lowerFile = file.toLowerCase();
+        const fileName = file.split('/').pop()?.toLowerCase() || '';
         return lowerFile.includes('logo') || 
                lowerFile.includes('chatgpt') ||
-               lowerFile.includes('image 2025') ||
-               (lowerFile.endsWith('.png') || lowerFile.endsWith('.jpg') || lowerFile.endsWith('.jpeg') || lowerFile.endsWith('.svg'));
+               lowerFile.includes('image') ||
+               fileName.includes('logo') ||
+               fileName.includes('chatgpt') ||
+               fileName.includes('image') ||
+               (lowerFile.endsWith('.png') || 
+                lowerFile.endsWith('.jpg') || 
+                lowerFile.endsWith('.jpeg') || 
+                lowerFile.endsWith('.svg') ||
+                lowerFile.endsWith('.webp'));
       });
 
       if (logoFiles.length > 0) {
