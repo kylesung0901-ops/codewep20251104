@@ -25,6 +25,33 @@ export function KakaoFloatingButton() {
           return;
         }
 
+        console.log('Starting to search for Kakao logo in Firebase Storage...');
+
+        // 재귀적으로 모든 파일 검색하는 함수
+        const getAllFiles = async (path: string = ''): Promise<string[]> => {
+          const allFiles: string[] = [];
+          try {
+            const pathRef = ref(storage, path);
+            const result = await listAll(pathRef);
+            
+            // 현재 경로의 파일들 추가
+            result.items.forEach(item => {
+              const fullPath = path ? `${path}/${item.name}` : item.name;
+              allFiles.push(fullPath);
+            });
+
+            // 하위 폴더들도 재귀적으로 검색
+            for (const folderRef of result.prefixes) {
+              const folderPath = path ? `${path}/${folderRef.name}` : folderRef.name;
+              const folderFiles = await getAllFiles(folderPath);
+              allFiles.push(...folderFiles);
+            }
+          } catch (e) {
+            console.log('Error listing path:', path, e);
+          }
+          return allFiles;
+        };
+
         // Firebase Storage에서 카카오톡 로고 찾기
         const pathsToTry = [
           'kakao.jpg',
@@ -53,7 +80,7 @@ export function KakaoFloatingButton() {
             const url = await getDownloadURL(storageRef);
             if (url) {
               foundUrl = url;
-              console.log('Found Kakao logo at path:', path);
+              console.log('✅ Found Kakao logo at path:', path);
               break;
             }
           } catch (e) {
@@ -61,76 +88,71 @@ export function KakaoFloatingButton() {
           }
         }
 
-        // 경로로 찾지 못하면 자동 검색
+        // 경로로 찾지 못하면 전체 Storage 검색
         if (!foundUrl) {
-          console.log('Searching for Kakao logo in Firebase Storage...');
+          console.log('🔍 Searching all files in Firebase Storage...');
           try {
-            const rootRef = ref(storage, '');
-            const result = await listAll(rootRef);
-            
-            const allFiles: string[] = [];
-            
-            // 루트 파일들
-            result.items.forEach(item => {
-              allFiles.push(item.name);
-            });
+            const allFiles = await getAllFiles();
+            console.log('📁 Total files found in Storage:', allFiles.length);
+            console.log('📋 All files:', allFiles);
 
-            // 폴더의 파일들도 검색
-            for (const folderRef of result.prefixes) {
-              try {
-                const folderList = await listAll(ref(storage, folderRef.name));
-                folderList.items.forEach(item => {
-                  allFiles.push(`${folderRef.name}/${item.name}`);
-                });
-              } catch (e) {
-                console.log('Error listing folder:', folderRef.name);
-              }
-            }
-
-            console.log('All files in Storage:', allFiles);
-
-            // 카카오 관련 파일 찾기 (JPG 우선)
-            const kakaoFiles = allFiles.filter(file => {
+            // 1순위: 카카오 관련 JPG 파일
+            const kakaoJpgFiles = allFiles.filter(file => {
               const lowerFile = file.toLowerCase();
               const fileName = file.split('/').pop()?.toLowerCase() || '';
               return (lowerFile.includes('kakao') || 
                       lowerFile.includes('kakaotalk') ||
                       fileName.includes('kakao') ||
                       fileName.includes('kakaotalk')) &&
-                     (lowerFile.endsWith('.jpg') || 
-                      lowerFile.endsWith('.jpeg') || 
-                      lowerFile.endsWith('.png'));
+                     (lowerFile.endsWith('.jpg') || lowerFile.endsWith('.jpeg'));
             });
 
-            console.log('Found Kakao files:', kakaoFiles);
+            // 2순위: 카카오 관련 PNG 파일
+            const kakaoPngFiles = allFiles.filter(file => {
+              const lowerFile = file.toLowerCase();
+              const fileName = file.split('/').pop()?.toLowerCase() || '';
+              return (lowerFile.includes('kakao') || 
+                      lowerFile.includes('kakaotalk') ||
+                      fileName.includes('kakao') ||
+                      fileName.includes('kakaotalk')) &&
+                     lowerFile.endsWith('.png');
+            });
 
-            // JPG 파일 우선 선택
-            const jpgFiles = kakaoFiles.filter(f => {
-              const lower = f.toLowerCase();
+            // 3순위: 모든 JPG 파일 (카카오 키워드 없어도)
+            const allJpgFiles = allFiles.filter(file => {
+              const lower = file.toLowerCase();
               return lower.endsWith('.jpg') || lower.endsWith('.jpeg');
             });
-            
-            const targetFile = jpgFiles.length > 0 ? jpgFiles[0] : kakaoFiles[0];
+
+            console.log('🎯 Kakao JPG files:', kakaoJpgFiles);
+            console.log('🎯 Kakao PNG files:', kakaoPngFiles);
+            console.log('📸 All JPG files:', allJpgFiles);
+
+            // 우선순위에 따라 파일 선택
+            const targetFile = kakaoJpgFiles[0] || kakaoPngFiles[0] || allJpgFiles[0];
 
             if (targetFile) {
-              console.log('Using Kakao logo file:', targetFile);
+              console.log('✅ Using file:', targetFile);
               const storageRef = ref(storage, targetFile);
               foundUrl = await getDownloadURL(storageRef);
+              console.log('✅ Successfully loaded image URL');
+            } else {
+              console.warn('⚠️ No JPG files found in Firebase Storage');
             }
           } catch (e) {
-            console.error('Error searching for Kakao logo:', e);
+            console.error('❌ Error searching for Kakao logo:', e);
           }
         }
 
         if (foundUrl) {
-          console.log('Kakao logo loaded successfully:', foundUrl);
+          console.log('✅ Kakao logo loaded successfully!');
           setLogoUrl(foundUrl);
         } else {
-          console.warn('Kakao logo not found in Firebase Storage');
+          console.warn('⚠️ Kakao logo not found in Firebase Storage');
           setError('Kakao logo not found');
         }
       } catch (err: any) {
-        console.error('Failed to load Kakao logo:', err);
+        console.error('❌ Failed to load Kakao logo:', err);
         setError(err.message || 'Failed to load logo');
       } finally {
         setLoading(false);
