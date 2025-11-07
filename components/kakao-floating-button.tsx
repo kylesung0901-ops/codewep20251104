@@ -63,12 +63,24 @@ export function KakaoFloatingButton() {
           'kakaotalk.jpg',
           'kakaotalk.jpeg',
           'kakaotalk.png',
+          'kakao_talk.jpg',
+          'kakao_talk.jpeg',
+          'kakao_talk.png',
+          'kakaotalk-logo.jpg',
+          'kakaotalk-logo.jpeg',
+          'kakaotalk-logo.png',
           'logos/kakao.jpg',
           'logos/kakao.jpeg',
           'logos/kakao.png',
+          'logos/kakaotalk.jpg',
+          'logos/kakaotalk.jpeg',
+          'logos/kakaotalk.png',
           'images/kakao.jpg',
           'images/kakao.jpeg',
           'images/kakao.png',
+          'images/kakaotalk.jpg',
+          'images/kakaotalk.jpeg',
+          'images/kakaotalk.png',
         ];
 
         let foundUrl: string | null = null;
@@ -102,8 +114,10 @@ export function KakaoFloatingButton() {
               const fileName = file.split('/').pop()?.toLowerCase() || '';
               return (lowerFile.includes('kakao') || 
                       lowerFile.includes('kakaotalk') ||
+                      lowerFile.includes('kakao_talk') ||
                       fileName.includes('kakao') ||
-                      fileName.includes('kakaotalk')) &&
+                      fileName.includes('kakaotalk') ||
+                      fileName.includes('kakao_talk')) &&
                      (lowerFile.endsWith('.jpg') || lowerFile.endsWith('.jpeg'));
             });
 
@@ -113,8 +127,10 @@ export function KakaoFloatingButton() {
               const fileName = file.split('/').pop()?.toLowerCase() || '';
               return (lowerFile.includes('kakao') || 
                       lowerFile.includes('kakaotalk') ||
+                      lowerFile.includes('kakao_talk') ||
                       fileName.includes('kakao') ||
-                      fileName.includes('kakaotalk')) &&
+                      fileName.includes('kakaotalk') ||
+                      fileName.includes('kakao_talk')) &&
                      lowerFile.endsWith('.png');
             });
 
@@ -198,7 +214,7 @@ export function KakaoFloatingButton() {
       href={KAKAO_OPEN_CHAT_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-all overflow-hidden bg-white"
+      className="fixed bottom-6 right-6 z-50 h-16 w-16 rounded-full shadow-lg hover:scale-110 transition-all overflow-hidden bg-white border-2 border-yellow-400"
       aria-label="카카오톡 오픈채팅"
     >
       <div className="relative h-full w-full">
@@ -206,8 +222,9 @@ export function KakaoFloatingButton() {
           src={logoUrl}
           alt="카카오톡 오픈채팅"
           fill
-          className="object-contain p-2"
+          className="object-contain p-1.5"
           unoptimized
+          priority
           onError={(e) => {
             console.error('Kakao logo image load error:', e);
             setError('Image load failed');
